@@ -54,10 +54,5 @@ public class UserController {
 		return this.userService.findByUsername(user.getName());
 	}
 	
-	@GetMapping("/foo")
-    public Map<String, String> getFoo() {
-        Map<String, String> fooObj = new HashMap<>();
-        fooObj.put("foo", "bar");
-        return fooObj;
-    }
+
 }

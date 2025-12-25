@@ -1,5 +1,8 @@
 package isa.jutjubic.controller;
 
+import isa.jutjubic.model.VerificationToken;
+import isa.jutjubic.service.impl.EmailService;
+import isa.jutjubic.service.impl.VerificationTokenService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -9,19 +12,19 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import isa.jutjubic.dto.JwtAuthenticationRequest;
 import isa.jutjubic.dto.UserRequest;
 import isa.jutjubic.dto.UserTokenState;
-import isa.jutjubic.exception.ResourceConflictException;
+
 import isa.jutjubic.model.User;
 import isa.jutjubic.service.UserService;
 import isa.jutjubic.util.TokenUtils;
+
+import java.io.IOException;
+import java.time.LocalDateTime;
 
 
 //Kontroler zaduzen za autentifikaciju korisnika
@@ -37,6 +40,12 @@ public class AuthenticationController {
 
 	@Autowired
 	private UserService userService;
+
+	@Autowired
+	private VerificationTokenService verificationTokenService;
+
+	@Autowired
+	private EmailService emailService;
 	
 	// Prvi endpoint koji pogadja korisnik kada se loguje.
 	// Tada zna samo svoje korisnicko ime i lozinku i to prosledjuje na backend.
@@ -61,17 +70,38 @@ public class AuthenticationController {
 		return ResponseEntity.ok(new UserTokenState(jwt, expiresIn));
 	}
 
-	// Endpoint za registraciju novog korisnika
 	@PostMapping("/signup")
-	public ResponseEntity<User> addUser(@RequestBody UserRequest userRequest, UriComponentsBuilder ucBuilder) {
-		User existUser = this.userService.findByUsername(userRequest.getUsername());
+	public ResponseEntity<String> addUser(@RequestBody UserRequest userRequest) {
 
-		if (existUser != null) {
-			throw new ResourceConflictException(userRequest.getId(), "Username already exists");
+		if (userService.findByUsername(userRequest.getUsername()) != null) {
+			//throw new ResourceConflictException(userRequest.getId(), "Username already exists");
 		}
 
-		User user = this.userService.save(userRequest);
+		User user = userService.save(userRequest);
 
-		return new ResponseEntity<>(user, HttpStatus.CREATED);
+		VerificationToken token = verificationTokenService.createToken(user);
+
+		emailService.sendVerificationEmail(user, token.getToken());
+
+		return ResponseEntity.ok("Registration successful. Check your email.");
+	}
+
+	@GetMapping("/verify")
+	public void verifyAccount(@RequestParam String token, HttpServletResponse response) throws IOException {
+
+		VerificationToken vt = verificationTokenService.findByToken(token);
+
+		if (vt == null || vt.getExpiryDate().isBefore(LocalDateTime.now())) {
+			response.sendRedirect("http://localhost:4200/activation-error");
+			return;
+		}
+
+		User user = vt.getUser();
+		user.setEnabled(true);
+		userService.update(user);
+
+		verificationTokenService.delete(vt);
+
+		response.sendRedirect("http://localhost:4200/activation-success");
 	}
 }
