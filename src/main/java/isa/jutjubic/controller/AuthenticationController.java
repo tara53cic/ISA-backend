@@ -2,7 +2,9 @@ package isa.jutjubic.controller;
 
 import isa.jutjubic.model.VerificationToken;
 import isa.jutjubic.service.impl.EmailService;
+import isa.jutjubic.service.impl.LoginAttemptService;
 import isa.jutjubic.service.impl.VerificationTokenService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -25,6 +28,8 @@ import isa.jutjubic.util.TokenUtils;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.Map;
 
 
 //Kontroler zaduzen za autentifikaciju korisnika
@@ -46,32 +51,49 @@ public class AuthenticationController {
 
 	@Autowired
 	private EmailService emailService;
+
+    @Autowired
+    private LoginAttemptService loginAttemptService;
 	
 	// Prvi endpoint koji pogadja korisnik kada se loguje.
 	// Tada zna samo svoje korisnicko ime i lozinku i to prosledjuje na backend.
 	@PostMapping("/login")
 	public ResponseEntity<UserTokenState> createAuthenticationToken(
-			@RequestBody JwtAuthenticationRequest authenticationRequest, HttpServletResponse response) {
-		// Ukoliko kredencijali nisu ispravni, logovanje nece biti uspesno, desice se
-		// AuthenticationException
-		Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-				authenticationRequest.getUsername(), authenticationRequest.getPassword()));
+			@RequestBody JwtAuthenticationRequest authenticationRequest, HttpServletRequest request) {
+        String ip = getClientIP(request);
 
-		// Ukoliko je autentifikacija uspesna, ubaci korisnika u trenutni security
-		// kontekst
-		SecurityContextHolder.getContext().setAuthentication(authentication);
+        if (loginAttemptService.isBlocked(ip)) {
+            return ResponseEntity
+                    .status(HttpStatus.TOO_MANY_REQUESTS)
+                    .build();
+        }
 
-		// Kreiraj token za tog korisnika
-		User user = (User) authentication.getPrincipal();
-		String jwt = tokenUtils.generateToken(user.getUsername());
-		int expiresIn = tokenUtils.getExpiredIn();
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            authenticationRequest.getUsername(),
+                            authenticationRequest.getPassword()
+                    )
+            );
 
-		// Vrati token kao odgovor na uspesnu autentifikaciju
-		return ResponseEntity.ok(new UserTokenState(jwt, expiresIn));
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            User user = (User) authentication.getPrincipal();
+            String jwt = tokenUtils.generateToken(user.getUsername());
+            int expiresIn = tokenUtils.getExpiredIn();
+
+            loginAttemptService.resetAttempts(ip);
+
+            return ResponseEntity.ok(new UserTokenState(jwt, expiresIn));
+
+        } catch (AuthenticationException ex) {
+            loginAttemptService.recordFailedAttempt(ip);
+            throw ex;
+        }
 	}
 
 	@PostMapping("/signup")
-	public ResponseEntity<String> addUser(@RequestBody UserRequest userRequest) {
+	public ResponseEntity<Map<String,String>> addUser(@RequestBody UserRequest userRequest) {
 
 		if (userService.findByUsername(userRequest.getUsername()) != null) {
 			//throw new ResourceConflictException(userRequest.getId(), "Username already exists");
@@ -83,7 +105,10 @@ public class AuthenticationController {
 
 		emailService.sendVerificationEmail(user, token.getToken());
 
-		return ResponseEntity.ok("Registration successful. Check your email.");
+		return ResponseEntity
+				.ok()
+				.contentType(MediaType.APPLICATION_JSON)
+				.body(Collections.singletonMap("message", "Registration successful. Check your email."));
 	}
 
 	@GetMapping("/verify")
@@ -102,6 +127,15 @@ public class AuthenticationController {
 
 		verificationTokenService.delete(vt);
 
-		response.sendRedirect("http://localhost:4200/activation-success");
+		response.sendRedirect("http://localhost:4200/login");
 	}
+
+    private String getClientIP(HttpServletRequest request) {
+        String xfHeader = request.getHeader("X-Forwarded-For");
+        if (xfHeader != null) {
+            return xfHeader.split(",")[0];
+        }
+        return request.getRemoteAddr();
+    }
+
 }
