@@ -1,5 +1,7 @@
 package isa.jutjubic.dto;
 
+import isa.jutjubic.model.Address;
+
 // DTO koji preuzima podatke iz HTML forme za registraciju
 public class UserRequest {
 
@@ -14,6 +16,8 @@ public class UserRequest {
 	private String lastname;
 	
 	private String email;
+
+	private Address address;
 
 	public String getUsername() {
 		return username;
@@ -63,4 +67,11 @@ public class UserRequest {
 		this.email = email;
 	}
 
+	public Address getAddress() {
+		return address;
+	}
+
+	public void setAddress(Address address) {
+		this.address = address;
+	}
 }

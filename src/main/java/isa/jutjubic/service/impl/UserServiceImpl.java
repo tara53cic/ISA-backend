@@ -50,6 +50,7 @@ public class UserServiceImpl implements UserService {
 		u.setEmail(userRequest.getEmail());
 
 		u.setEnabled(false);
+		u.setAddress(userRequest.getAddress());
 
 		List<Role> roles = roleService.findByName("ROLE_USER");
 		u.setRoles(roles);
