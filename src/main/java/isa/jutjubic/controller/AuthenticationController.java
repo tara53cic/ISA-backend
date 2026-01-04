@@ -1,5 +1,6 @@
 package isa.jutjubic.controller;
 
+import isa.jutjubic.exception.ResourceConflictException;
 import isa.jutjubic.model.VerificationToken;
 import isa.jutjubic.service.impl.EmailService;
 import isa.jutjubic.service.impl.LoginAttemptService;
@@ -96,7 +97,8 @@ public class AuthenticationController {
 	public ResponseEntity<Map<String,String>> addUser(@RequestBody UserRequest userRequest) {
 
 		if (userService.findByUsername(userRequest.getUsername()) != null) {
-			//throw new ResourceConflictException(userRequest.getId(), "Username already exists");
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("message", "Username already exists"));
 		}
 
 		User user = userService.save(userRequest);
