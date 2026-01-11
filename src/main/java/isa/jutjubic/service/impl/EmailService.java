@@ -25,23 +25,7 @@ public class EmailService {
      * Anotacija za oznacavanje asinhronog zadatka
      * Vise informacija na: https://docs.spring.io/spring/docs/current/spring-framework-reference/integration.html#scheduling
      */
-    @Async
-    public void sendNotificationAsync(User user) throws MailException, InterruptedException {
-        System.out.println("Async metoda se izvrsava u drugom Threadu u odnosu na prihvaceni zahtev. Thread id: " + Thread.currentThread().getId());
-        Thread.sleep(10000);
 
-        System.out.println("Slanje emaila...");
-        sendEmail(user.getEmail(), "Primer slanja emaila pomoću asinhronog Spring taska", "Pozdrav " + user.getFirstName() + ",\n\nhvala što pratiš ISA.");
-        System.out.println("Email poslat!");
-    }
-
-    public void sendNotificationSync(User user) throws MailException, InterruptedException {
-        System.out.println("Sync metoda se izvrsava u istom Threadu koji je i prihvatio zahtev. Thread id: " + Thread.currentThread().getId());
-        Thread.sleep(10000);
-        System.out.println("Slanje emaila...");
-        sendEmail(user.getEmail(), "Primer slanja emaila pomocu sinhronog Spring taska", "Pozdrav " + user.getFirstName() + ",\n\nhvala što pratiš ISA.");
-        System.out.println("Email poslat!");
-    }
 
     private void sendEmail(String to, String subject, String body) {
         SimpleMailMessage mail = new SimpleMailMessage();
