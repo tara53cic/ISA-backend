@@ -40,6 +40,10 @@ public class VideoPost {
     @Column(name = "location")
     private String location;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "author", nullable = false)
+    private User author;
+
     public VideoPost()
     {
         this.createdAt = LocalDateTime.now();
@@ -112,4 +116,8 @@ public class VideoPost {
     public String getLocation() { return location; }
 
     public void setLocation(String location) { this.location = location; }
+
+    public User getAuthor() { return author; }
+
+    public void setAuthor(User author) { this.author = author; }
 }

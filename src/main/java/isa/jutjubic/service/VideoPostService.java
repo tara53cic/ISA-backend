@@ -1,19 +1,19 @@
 package isa.jutjubic.service;
 
 import isa.jutjubic.dto.VideoPostCreateRequest;
-import isa.jutjubic.dto.VideoPostDetails;
-import isa.jutjubic.dto.VideoPostList;
+import isa.jutjubic.model.User;
 import isa.jutjubic.model.VideoPost;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface VideoPostService {
-    VideoPost createPost(VideoPostCreateRequest request, MultipartFile thumbnail, MultipartFile video);
+    VideoPost createPost(VideoPostCreateRequest request, MultipartFile thumbnail, MultipartFile video, User author) throws IOException;
 
-    List<VideoPostList> getVideos();
+    List<VideoPost> getVideos();
 
-    VideoPostDetails getVideoDetails(Long id);
+    VideoPost getVideoById(Long id);
 
-    byte[] getThumbnail(Long id);
+    byte[] getThumbnail(Long id) throws IOException;
 }
