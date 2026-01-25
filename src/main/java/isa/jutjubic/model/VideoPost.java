@@ -2,57 +2,54 @@ package isa.jutjubic.model;
 
 import jakarta.persistence.*;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "VIDEO_POSTS")
 public class VideoPost {
+
+    private static final long serialVersionUID = 1L;
+
     @Id
-    @Column(name = "id", nullable = false)
+    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "title", nullable = false)
+    @Column(name = "title")
     private String title;
 
-    @Column(name = "description", nullable = false)
+    @Column(name = "description")
     private String description;
 
     @ElementCollection
     @CollectionTable(name = "videoPostTags", joinColumns = @JoinColumn(name = "videoPostId"))
     @Column(name = "tag")
-    private List<String> tags;
+    private List<String> tags = new ArrayList<>();
 
-    @Column(name = "thumbnail", nullable = false)
+    @Column(name = "thumbnail")
     private String thumbnail;
 
-    @Column(name = "videoPath", nullable = false)
+    @Column(name = "videoPath")
     private String videoPath;
 
     @Column(name = "createdAt")
-    private Instant createdAt;
+    private LocalDateTime createdAt;
 
-    @Column(name = "longitude")
-    private Double longitude;
+    @Column(name = "location")
+    private String location;
 
-    @Column(name = "latitude")
-    private Double latitude;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "authorId")
-    private User author;
-
-    @PrePersist
-    void prePersist() {
-        this.createdAt = Instant.now();
+    public VideoPost()
+    {
+        this.createdAt = LocalDateTime.now();
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -96,36 +93,10 @@ public class VideoPost {
         this.videoPath = videoPath;
     }
 
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
+    public LocalDateTime getCreatedAt() { return createdAt; }
 
-    public void setCreatedAt(Instant createdAt) {
+    public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
-    }
-
-    public Double getLongitude() {
-        return longitude;
-    }
-
-    public void setLongitude(Double longitude) {
-        this.longitude = longitude;
-    }
-
-    public Double getLatitude() {
-        return latitude;
-    }
-
-    public void setLatitude(Double latitude) {
-        this.latitude = latitude;
-    }
-
-    public User getAuthor() {
-        return author;
-    }
-
-    public void setAuthor(User author) {
-        this.author = author;
     }
 
     public void addTags(String tag)
@@ -138,8 +109,7 @@ public class VideoPost {
         this.tags.remove(tag);
     }
 
-    public boolean isAuthor(User user)
-    {
-        return user != null && this.author != null && this.author.getId().equals(user.getId());
-    }
+    public String getLocation() { return location; }
+
+    public void setLocation(String location) { this.location = location; }
 }

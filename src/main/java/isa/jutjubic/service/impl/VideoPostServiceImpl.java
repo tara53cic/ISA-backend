@@ -1,18 +1,21 @@
 package isa.jutjubic.service.impl;
 
 import isa.jutjubic.dto.VideoPostCreateRequest;
-import isa.jutjubic.model.User;
 import isa.jutjubic.model.VideoPost;
 import isa.jutjubic.repository.VideoPostRepository;
 import isa.jutjubic.service.VideoPostService;
+import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.nio.file.AccessDeniedException;
 import java.util.List;
 
+@Service
 public class VideoPostServiceImpl implements VideoPostService {
 
+    @Autowired
     private VideoPostRepository repository;
 
     @Value("${app.storage.videos-dir:storage/videos}")
@@ -25,18 +28,9 @@ public class VideoPostServiceImpl implements VideoPostService {
     private long uploadTimeoutSeconds;
 
     @Override
-    public List<VideoPost> findAll()
+    @Transactional
+    public VideoPost createPost(VideoPostCreateRequest request, MultipartFile thumbnail, MultipartFile video)
     {
-        return this.repository.findAllByOrderByCreatedAtDesc();
+
     }
-
-    public VideoPost findById(Long id)
-    {
-        return this.repository.findById(id).orElseGet(null);
-    }
-
-    /*public VideoPost create(User user, VideoPostCreateRequest request, MultipartFile thumbnail, MultipartFile videoPath)
-    {
-
-    }*/
 }

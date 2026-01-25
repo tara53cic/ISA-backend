@@ -1,17 +1,27 @@
 package isa.jutjubic.dto;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class VideoPostCreateRequest {
     private String title;
     private String description;
     private List<String> tags;
-    private Double longitude;
-    private Double latitude;
+    private String location;
 
-    public String getTitle() {
-        return title;
+    public VideoPostCreateRequest() {
+        this.tags = new ArrayList<>();
     }
+
+    public VideoPostCreateRequest( String title, String description, List<String> tags, String location)
+    {
+        this.title = title;
+        this.description = description;
+        this.tags = tags;
+        this.location = location;
+    }
+
+    public String getTitle() { return title; }
 
     public void setTitle(String title) {
         this.title = title;
@@ -33,19 +43,8 @@ public class VideoPostCreateRequest {
         this.tags = tags;
     }
 
-    public Double getLongitude() {
-        return longitude;
-    }
+    public String getLocation() { return location; }
 
-    public void setLongitude(Double longitude) {
-        this.longitude = longitude;
-    }
+    public void setLocation(String location) { this.location = location; }
 
-    public Double getLatitude() {
-        return latitude;
-    }
-
-    public void setLatitude(Double latitude) {
-        this.latitude = latitude;
-    }
 }
