@@ -44,6 +44,9 @@ public class VideoPost {
     @JoinColumn(name = "author", nullable = false)
     private User author;
 
+    @Column(name = "views")
+    private Long views = 0L;
+
     public VideoPost()
     {
         this.createdAt = LocalDateTime.now();
@@ -120,4 +123,8 @@ public class VideoPost {
     public User getAuthor() { return author; }
 
     public void setAuthor(User author) { this.author = author; }
+
+    public Long getViews() { return views; }
+
+    public void setViews(Long views) { this.views = views; }
 }

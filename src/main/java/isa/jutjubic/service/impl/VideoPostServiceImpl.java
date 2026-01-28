@@ -6,6 +6,7 @@ import isa.jutjubic.model.VideoPost;
 import isa.jutjubic.repository.VideoPostRepository;
 import isa.jutjubic.service.VideoPostService;
 import org.springframework.data.domain.Sort;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,9 @@ public class VideoPostServiceImpl implements VideoPostService {
 
     @Autowired
     private VideoPostRepository repository;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     @Value("${app.storage.videos-dir:storage/videos}")
     private String videosDir;
@@ -82,7 +86,10 @@ public class VideoPostServiceImpl implements VideoPostService {
     @Override
     public VideoPost getVideoById(Long id)
     {
-        return repository.findById(id).orElseThrow(() -> new RuntimeException("Video not found"));
+        repository.incrementViewCount(id);
+        VideoPost video = repository.findById(id).orElseThrow(() -> new RuntimeException("Video not found"));
+        this.messagingTemplate.convertAndSend("/topic/videos/" + id, video);
+        return video;
     }
 
     @Override
