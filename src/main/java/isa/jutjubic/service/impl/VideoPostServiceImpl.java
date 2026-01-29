@@ -41,7 +41,7 @@ public class VideoPostServiceImpl implements VideoPostService {
     @Value("${app.storage.thumbs-dir:storage/thumbs}")
     private String thumbsDir;
 
-    @Value("${replica.id}")
+    @Value("${replica.id:default}")
     private String replicaId;
 
     private final Map<Long, GCounter> viewCounters = new ConcurrentHashMap<>();
