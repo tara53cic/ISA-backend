@@ -1,5 +1,6 @@
 package isa.jutjubic.service.impl;
 
+import isa.jutjubic.crdt.GCounter;
 import isa.jutjubic.dto.VideoPostCreateRequest;
 import isa.jutjubic.model.User;
 import isa.jutjubic.model.VideoPost;
@@ -19,7 +20,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.springframework.data.domain.Sort.Direction.DESC;
 
@@ -37,6 +40,11 @@ public class VideoPostServiceImpl implements VideoPostService {
 
     @Value("${app.storage.thumbs-dir:storage/thumbs}")
     private String thumbsDir;
+
+    @Value("${replica.id:default}")
+    private String replicaId;
+
+    private final Map<Long, GCounter> viewCounters = new ConcurrentHashMap<>();
 
     @Override
     @Transactional(rollbackFor = Exception.class, timeout = 30)
@@ -99,4 +107,47 @@ public class VideoPostServiceImpl implements VideoPostService {
         VideoPost post = repository.findById(id).orElseThrow(() -> new RuntimeException("Video not found"));
         return Files.readAllBytes(Paths.get(post.getThumbnail()));
     }
+
+    @Override
+    public void recordView(Long id) {
+        GCounter counter = getCounter(id);
+        counter.increment(replicaId);
+
+    }
+
+
+    @Override
+    public GCounter getCounter(Long videoId) {
+        return viewCounters.computeIfAbsent(videoId, id -> new GCounter());
+    }
+
+    @Override
+    public long getLocalViewCount(Long videoId) {
+        return getCounter(videoId).value();
+    }
+
+    @Override
+    public void merge(Long videoId, Map<String, Long> otherState) {
+        GCounter incoming = new GCounter();
+        otherState.forEach((replica, value) ->
+                incoming.getState().put(replica, value)
+        );
+
+        GCounter local = getCounter(videoId);
+        local.merge(incoming);
+
+        // SNAPSHOT posle merge-a
+        persistViewsSnapshot(videoId);
+    }
+
+
+    @Override
+    public void persistViewsSnapshot(Long videoId) {
+        long value = getCounter(videoId).value();
+
+        VideoPost video = repository.findById(videoId).orElseThrow();
+        video.setViews(value);
+        repository.save(video);
+    }
+
 }

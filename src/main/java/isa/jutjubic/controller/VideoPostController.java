@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @RestController
@@ -63,6 +64,30 @@ public class VideoPostController {
                 .ok()
                 .contentType(MediaType.IMAGE_JPEG).cacheControl(CacheControl.maxAge(30, TimeUnit.DAYS).cachePublic())
                 .body(thumbnail);
+    }
+
+    @PostMapping("/{id}/view")
+    public ResponseEntity<?> incrementView(@PathVariable Long id) {
+        videoService.recordView(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{id}/view/local")
+    public long getLocalViews(@PathVariable Long id) {
+        return videoService.getLocalViewCount(id);
+    }
+
+    @PostMapping("/{id}/merge")
+    public void merge(
+            @PathVariable Long id,
+            @RequestBody Map<String, Long> otherState
+    ) {
+        videoService.merge(id, otherState);
+    }
+
+    @GetMapping("/{id}/state")
+    public Map<String, Long> getState(@PathVariable Long id) {
+        return videoService.getCounter(id).getState();
     }
     
 }
