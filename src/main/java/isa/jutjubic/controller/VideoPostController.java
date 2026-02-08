@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,7 +33,7 @@ public class VideoPostController {
     private UserService userService;
 
     @PostMapping(value = "/post", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasRole('USER')")
+    //@PreAuthorize("hasRole('USER')")
     public ResponseEntity<VideoPost> createPost(
             @RequestPart("data") VideoPostCreateRequest request,
             @RequestPart("thumbnail") MultipartFile thumbnail,
@@ -42,6 +43,11 @@ public class VideoPostController {
         User author = userService.findByUsername(principal.getName());
         VideoPost created = videoService.createPost(request, thumbnail, video, author);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    @GetMapping("/whoami")
+    public String whoami(Principal principal) {
+        return principal == null ? "NO AUTH" : principal.getName();
     }
 
     @GetMapping

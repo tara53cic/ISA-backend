@@ -22,7 +22,7 @@ public class Role implements GrantedAuthority {
     @JsonIgnore
     @Override
     public String getAuthority() {
-        return name;
+        return "ROLE_" + name; // now returns "ROLE_USER"
     }
 
     public void setName(String name) {
@@ -41,5 +41,7 @@ public class Role implements GrantedAuthority {
     public void setId(Long id) {
         this.id = id;
     }
+
+
 
 }

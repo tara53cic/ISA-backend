@@ -94,7 +94,7 @@ public class VideoPostServiceImpl implements VideoPostService {
     @Override
     public VideoPost getVideoById(Long id)
     {
-        repository.incrementViewCount(id);
+
         VideoPost video = repository.findById(id).orElseThrow(() -> new RuntimeException("Video not found"));
         this.messagingTemplate.convertAndSend("/topic/videos/" + id, video);
         return video;
@@ -110,8 +110,7 @@ public class VideoPostServiceImpl implements VideoPostService {
 
     @Override
     public void recordView(Long id) {
-        GCounter counter = getCounter(id);
-        counter.increment(replicaId);
+        repository.incrementViewCount(id);
 
     }
 

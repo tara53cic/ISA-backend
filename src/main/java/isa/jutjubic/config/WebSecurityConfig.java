@@ -19,6 +19,11 @@ import isa.jutjubic.security.auth.RestAuthenticationEntryPoint;
 import isa.jutjubic.security.auth.TokenAuthenticationFilter;
 import isa.jutjubic.service.impl.CustomUserDetailsService;
 import isa.jutjubic.util.TokenUtils;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 // Injektovanje bean-a za bezbednost
@@ -54,6 +59,21 @@ public class WebSecurityConfig {
 
  	    return authProvider;
  	}
+
+	@Bean
+	public CorsConfigurationSource corsConfigurationSource() {
+		CorsConfiguration config = new CorsConfiguration();
+
+		config.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:4200", "http://localhost:8082","http://localhost:8080" ));
+		config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+		config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+		config.setExposedHeaders(List.of("Authorization"));
+		config.setAllowCredentials(true);
+
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", config);
+		return source;
+	}
 
 
 
@@ -108,7 +128,8 @@ public class WebSecurityConfig {
 		);
 
 		// za development svrhe ukljuci konfiguraciju za CORS iz WebConfig klase
-		http.cors(cors -> cors.configure(http));
+		//http.cors(cors -> cors.configure(http));
+		http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
 
 		// zbog jednostavnosti primera ne koristimo Anti-CSRF token (https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html)
 		http.csrf(csrf -> csrf.disable());
