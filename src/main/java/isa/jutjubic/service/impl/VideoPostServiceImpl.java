@@ -110,8 +110,8 @@ public class VideoPostServiceImpl implements VideoPostService {
 
     @Override
     public void recordView(Long id) {
-        GCounter counter = getCounter(id);
-        counter.increment(replicaId);
+
+        repository.incrementViewCount(id);
 
     }
 
