@@ -6,15 +6,17 @@ import isa.jutjubic.model.VideoPost;
 import isa.jutjubic.service.UserService;
 import isa.jutjubic.service.VideoPostService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.CacheControl;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
@@ -64,6 +66,33 @@ public class VideoPostController {
                 .ok()
                 .contentType(MediaType.IMAGE_JPEG).cacheControl(CacheControl.maxAge(30, TimeUnit.DAYS).cachePublic())
                 .body(thumbnail);
+    }
+
+    @GetMapping(value = "/{id}/watch")
+    public ResponseEntity<Resource> watchVideo(@PathVariable Long id) {
+        try {
+            VideoPost post = videoService.getVideoById(id);
+
+            Path path = Paths.get(post.getVideoPath());
+
+            Resource video = new UrlResource(path.toUri());
+
+            if (!video.exists() || !video.isReadable()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            String contentType = Files.probeContentType(path);
+            if (contentType == null) {
+                contentType = "video/mp4";
+            }
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .body(video);
+
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/{id}/view")

@@ -3,6 +3,7 @@ package isa.jutjubic.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -19,6 +20,8 @@ import isa.jutjubic.security.auth.RestAuthenticationEntryPoint;
 import isa.jutjubic.security.auth.TokenAuthenticationFilter;
 import isa.jutjubic.service.impl.CustomUserDetailsService;
 import isa.jutjubic.util.TokenUtils;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 // Injektovanje bean-a za bezbednost
@@ -88,6 +91,9 @@ public class WebSecurityConfig {
 			.requestMatchers("/auth/**").permitAll()		// /auth/**
 			.requestMatchers("/h2-console/**").permitAll()	// /h2-console/** ako se koristi H2 baza)
 			.requestMatchers("/api/foo").permitAll()		// /api/foo
+                .requestMatchers(HttpMethod.GET, "/api/videos/*/thumbnail").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/videos/*/watch").permitAll()
+                .requestMatchers(HttpMethod.GET, "/storage/**").permitAll()
 			// ukoliko ne zelimo da koristimo @PreAuthorize anotacije nad metodama kontrolera, moze se iskoristiti hasRole() metoda da se ogranici
 			// koji tip korisnika moze da pristupi odgovarajucoj ruti. Npr. ukoliko zelimo da definisemo da ruti 'admin' moze da pristupi
 			// samo korisnik koji ima rolu 'ADMIN', navodimo na sledeci nacin:

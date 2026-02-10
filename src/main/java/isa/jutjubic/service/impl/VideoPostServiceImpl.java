@@ -96,7 +96,7 @@ public class VideoPostServiceImpl implements VideoPostService {
     {
         repository.incrementViewCount(id);
         VideoPost video = repository.findById(id).orElseThrow(() -> new RuntimeException("Video not found"));
-        this.messagingTemplate.convertAndSend("/topic/videos/" + id, video);
+        //this.messagingTemplate.convertAndSend("/topic/videos/" + id, video);
         return video;
     }
 
