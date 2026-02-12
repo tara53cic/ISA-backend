@@ -74,8 +74,11 @@ public class VideoPostController {
         try {
             VideoPost post = videoService.getVideoById(id);
 
-            Path path = Paths.get(post.getVideoPath());
+            if (post.getScheduledAt() != null && post.getScheduledAt().isAfter(LocalDateTime.now())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
 
+            Path path = Paths.get(post.getVideoPath());
             Resource video = new UrlResource(path.toUri());
 
             if (!video.exists() || !video.isReadable()) {
