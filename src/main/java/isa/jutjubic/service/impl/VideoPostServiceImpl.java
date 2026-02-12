@@ -15,17 +15,20 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.springframework.data.domain.Sort.Direction.DESC;
-
+import org.mp4parser.IsoFile;
+import org.mp4parser.boxes.iso14496.part12.MovieHeaderBox;
 @Service
 public class VideoPostServiceImpl implements VideoPostService {
 
@@ -46,6 +49,30 @@ public class VideoPostServiceImpl implements VideoPostService {
 
     private final Map<Long, GCounter> viewCounters = new ConcurrentHashMap<>();
 
+    private int getVideoDuration(Path videoPath) {
+        File file = videoPath.toFile();
+        if (!file.exists()) return 0;
+
+        try (IsoFile isoFile = new IsoFile(file.getAbsolutePath())) {
+            if (isoFile.getMovieBox() == null) {
+                System.err.println("Error: No MovieBox found in " + file.getName());
+                return 0;
+            }
+
+            MovieHeaderBox mvhd = isoFile.getMovieBox().getMovieHeaderBox();
+            if (mvhd == null) return 0;
+
+            double durationInSeconds = (double) mvhd.getDuration() / mvhd.getTimescale();
+            System.out.println("Successfully extracted duration for " + file.getName() + ": " + durationInSeconds + "s");
+
+            return (int) Math.ceil(durationInSeconds);
+        } catch (Exception e) {
+            System.err.println("Failed to parse duration for: " + file.getName());
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
     @Override
     @Transactional(rollbackFor = Exception.class, timeout = 30)
     public VideoPost createPost(VideoPostCreateRequest request, MultipartFile thumbnail, MultipartFile video, User author) throws IOException
@@ -60,6 +87,8 @@ public class VideoPostServiceImpl implements VideoPostService {
             Files.copy(video.getInputStream(), videoPath);
             Files.copy(thumbnail.getInputStream(), thumbnailPath);
 
+            int durationInSeconds = getVideoDuration(videoPath);
+
             VideoPost post = new VideoPost();
             post.setTitle(request.getTitle());
             post.setDescription(request.getDescription());
@@ -68,6 +97,9 @@ public class VideoPostServiceImpl implements VideoPostService {
             post.setThumbnail(thumbnailPath.toString());
             post.setVideoPath(videoPath.toString());
             post.setAuthor(author);
+
+            post.setDuration(durationInSeconds);
+            post.setScheduledAt(request.getScheduledAt());
 
             return repository.save(post);
         }
@@ -136,7 +168,6 @@ public class VideoPostServiceImpl implements VideoPostService {
         GCounter local = getCounter(videoId);
         local.merge(incoming);
 
-        // SNAPSHOT posle merge-a
         persistViewsSnapshot(videoId);
     }
 

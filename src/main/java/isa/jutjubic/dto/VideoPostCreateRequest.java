@@ -1,5 +1,6 @@
 package isa.jutjubic.dto;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,6 +9,9 @@ public class VideoPostCreateRequest {
     private String description;
     private List<String> tags;
     private String location;
+
+    private LocalDateTime scheduledAt;
+
 
     public VideoPostCreateRequest() {
         this.tags = new ArrayList<>();
@@ -46,5 +50,8 @@ public class VideoPostCreateRequest {
     public String getLocation() { return location; }
 
     public void setLocation(String location) { this.location = location; }
+
+    public LocalDateTime getScheduledAt() { return scheduledAt; }
+    public void setScheduledAt(LocalDateTime scheduledAt) { this.scheduledAt = scheduledAt; }
 
 }

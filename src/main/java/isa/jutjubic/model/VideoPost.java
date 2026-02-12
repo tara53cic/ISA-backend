@@ -47,6 +47,13 @@ public class VideoPost {
     @Column(name = "views")
     private Long views = 0L;
 
+    @Column(name = "scheduledAt")
+    private LocalDateTime scheduledAt; // If null, it's a regular upload
+
+    @Column(name = "duration")
+    private Integer duration; // Duration in seconds (optional but helpful)
+
+
     public VideoPost()
     {
         this.createdAt = LocalDateTime.now();
@@ -127,4 +134,10 @@ public class VideoPost {
     public Long getViews() { return views; }
 
     public void setViews(Long views) { this.views = views; }
+
+    public LocalDateTime getScheduledAt() { return scheduledAt; }
+    public void setScheduledAt(LocalDateTime scheduledAt) { this.scheduledAt = scheduledAt; }
+
+    public Integer getDuration() { return duration; }
+    public void setDuration(Integer duration) { this.duration = duration; }
 }

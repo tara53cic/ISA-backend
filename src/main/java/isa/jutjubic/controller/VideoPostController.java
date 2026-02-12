@@ -18,6 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.Principal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -118,5 +119,32 @@ public class VideoPostController {
     public Map<String, Long> getState(@PathVariable Long id) {
         return videoService.getCounter(id).getState();
     }
-    
+
+    @GetMapping("/{id}/stream-info")
+    public ResponseEntity<?> getStreamInfo(@PathVariable Long id) {
+        VideoPost post = videoService.getVideoById(id);
+
+        if (post.getScheduledAt() == null) {
+            return ResponseEntity.ok(Map.of("type", "VOD", "offset", 0));
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        if (now.isBefore(post.getScheduledAt())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Video hasn't started yet");
+        }
+
+        // Calculate seconds passed since start
+        long secondsPassed = java.time.Duration.between(post.getScheduledAt(), now).toSeconds();
+
+        // If the video is 10 mins long and 12 mins passed, the "stream" is over
+        if (post.getDuration() != null && secondsPassed > post.getDuration()) {
+            return ResponseEntity.ok(Map.of("type", "VOD_FINISHED", "offset", 0));
+        }
+
+        return ResponseEntity.ok(Map.of(
+                "type", "LIVE_SIMULATION",
+                "offset", secondsPassed
+        ));
+    }
+
 }
