@@ -16,7 +16,7 @@ public class MonitoringService {
 
     public MonitoringService(MeterRegistry registry) {
         this.registry = registry;
-        // Register the Gauge
+
         Gauge.builder("app_active_users_count", activeUsernames, Set::size)
                 .description("Number of unique users active in the current window")
                 .register(registry);

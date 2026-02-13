@@ -4,7 +4,9 @@ import isa.jutjubic.crdt.GCounter;
 import isa.jutjubic.dto.VideoPostCreateRequest;
 import isa.jutjubic.model.User;
 import isa.jutjubic.model.VideoPost;
+import isa.jutjubic.model.View;
 import isa.jutjubic.repository.VideoPostRepository;
+import isa.jutjubic.repository.ViewRepository;
 import isa.jutjubic.service.VideoPostService;
 import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -36,7 +38,8 @@ public class VideoPostServiceImpl implements VideoPostService {
     private VideoPostRepository repository;
 
     @Autowired
-    private SimpMessagingTemplate messagingTemplate;
+    private ViewRepository viewRepository;
+
 
     @Value("${app.storage.videos-dir:storage/videos}")
     private String videosDir;
@@ -126,9 +129,7 @@ public class VideoPostServiceImpl implements VideoPostService {
     @Override
     public VideoPost getVideoById(Long id)
     {
-        repository.incrementViewCount(id);
         VideoPost video = repository.findById(id).orElseThrow(() -> new RuntimeException("Video not found"));
-        //this.messagingTemplate.convertAndSend("/topic/videos/" + id, video);
         return video;
     }
 
@@ -142,6 +143,9 @@ public class VideoPostServiceImpl implements VideoPostService {
 
     @Override
     public void recordView(Long id) {
+
+        View view = new View(id);
+        viewRepository.save(view);
 
         repository.incrementViewCount(id);
 

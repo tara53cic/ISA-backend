@@ -1,8 +1,10 @@
 package isa.jutjubic.controller;
 
 import isa.jutjubic.dto.VideoPostCreateRequest;
+import isa.jutjubic.model.PopularVideoReport;
 import isa.jutjubic.model.User;
 import isa.jutjubic.model.VideoPost;
+import isa.jutjubic.repository.PopularVideoReportRepository;
 import isa.jutjubic.service.UserService;
 import isa.jutjubic.service.VideoPostService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +35,9 @@ public class VideoPostController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private PopularVideoReportRepository reportRepository;
 
     @PostMapping(value = "/post", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('USER')")
@@ -136,10 +141,10 @@ public class VideoPostController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Video hasn't started yet");
         }
 
-        // Calculate seconds passed since start
+
         long secondsPassed = java.time.Duration.between(post.getScheduledAt(), now).toSeconds();
 
-        // If the video is 10 mins long and 12 mins passed, the "stream" is over
+
         if (post.getDuration() != null && secondsPassed > post.getDuration()) {
             return ResponseEntity.ok(Map.of("type", "VOD_FINISHED", "offset", 0));
         }
@@ -148,6 +153,22 @@ public class VideoPostController {
                 "type", "LIVE_SIMULATION",
                 "offset", secondsPassed
         ));
+    }
+
+    @GetMapping("/popular")
+    public ResponseEntity<List<VideoPost>> getPopularVideos() {
+        PopularVideoReport latestReport = reportRepository.findFirstByOrderByExecutionTimeDesc();
+
+        if (latestReport == null || latestReport.getTopVideos() == null) {
+            return ResponseEntity.noContent().build();
+        }
+
+        List<VideoPost> popularVideos = latestReport.getTopVideos().stream()
+                .map(entry -> videoService.getVideoById(entry.getVideoId()))
+                .filter(video -> video != null) // Safety check in case a video was deleted
+                .toList();
+
+        return ResponseEntity.ok(popularVideos);
     }
 
 }
