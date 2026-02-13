@@ -2,12 +2,14 @@ package isa.jutjubic.security.auth;
 
 import java.io.IOException;
 
+import isa.jutjubic.service.impl.MonitoringService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -26,12 +28,15 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 	private TokenUtils tokenUtils;
 
 	private UserDetailsService userDetailsService;
+
+	private final MonitoringService monitoringService;
 	
 	protected final Log LOGGER = LogFactory.getLog(getClass());
 
-	public TokenAuthenticationFilter(TokenUtils tokenHelper, UserDetailsService userDetailsService) {
+	public TokenAuthenticationFilter(MonitoringService monitoringService,TokenUtils tokenHelper, UserDetailsService userDetailsService) {
 		this.tokenUtils = tokenHelper;
 		this.userDetailsService = userDetailsService;
+		this.monitoringService = monitoringService;
 	}
 
 	@Override
@@ -52,7 +57,9 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 				username = tokenUtils.getUsernameFromToken(authToken);
 				
 				if (username != null) {
-					
+					//Šaljemo podatke za aktivnog korisnika ka Prometheusu
+					monitoringService.logUserActivity(username);
+
 					// 3. Preuzimanje korisnika na osnovu username-a
 					UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 					// 4. Provera da li je prosledjeni token validan

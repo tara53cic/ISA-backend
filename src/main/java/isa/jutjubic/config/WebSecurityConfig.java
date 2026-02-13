@@ -1,5 +1,6 @@
 package isa.jutjubic.config;
 
+import isa.jutjubic.service.impl.MonitoringService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,6 +31,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 // Ukljucivanje podrske za anotacije "@Pre*" i "@Post*" koje ce aktivirati autorizacione provere za svaki pristup metodi
 @EnableMethodSecurity(securedEnabled = true, jsr250Enabled = true)
 public class WebSecurityConfig {
+
+	@Autowired
+	private MonitoringService monitoringService;
 
 	// Servis koji se koristi za citanje podataka o korisnicima aplikacije
 	@Bean
@@ -94,6 +98,7 @@ public class WebSecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/videos/*/thumbnail").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/videos/*/watch").permitAll()
                 .requestMatchers(HttpMethod.GET, "/storage/**").permitAll()
+				.requestMatchers("/actuator/**").permitAll()
 			// ukoliko ne zelimo da koristimo @PreAuthorize anotacije nad metodama kontrolera, moze se iskoristiti hasRole() metoda da se ogranici
 			// koji tip korisnika moze da pristupi odgovarajucoj ruti. Npr. ukoliko zelimo da definisemo da ruti 'admin' moze da pristupi
 			// samo korisnik koji ima rolu 'ADMIN', navodimo na sledeci nacin:
@@ -120,7 +125,7 @@ public class WebSecurityConfig {
 		http.csrf(csrf -> csrf.disable());
 
 		// umetni custom filter TokenAuthenticationFilter kako bi se vrsila provera JWT tokena umesto cistih korisnickog imena i lozinke (koje radi BasicAuthenticationFilter)
-		http.addFilterBefore(new TokenAuthenticationFilter(tokenUtils,  userDetailsService()), BasicAuthenticationFilter.class);
+		http.addFilterBefore(new TokenAuthenticationFilter(monitoringService, tokenUtils,  userDetailsService()), BasicAuthenticationFilter.class);
 
         // ulancavanje autentifikacije
         http.authenticationProvider(authenticationProvider());
