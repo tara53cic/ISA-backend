@@ -49,6 +49,11 @@ public class VideoPostController {
     {
         User author = userService.findByUsername(principal.getName());
         VideoPost created = videoService.createPost(request, thumbnail, video, author);
+        if (created.getScheduledAt() != null && created.getScheduledAt().isBefore(LocalDateTime.now())) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(created);
+        }
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
