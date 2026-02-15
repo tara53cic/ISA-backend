@@ -1,6 +1,6 @@
 package isa.jutjubic.config;
 
-import isa.jutjubic.service.impl.MonitoringService;
+import isa.jutjubic.service.impl.MonitoringServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,10 +19,8 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 
 import isa.jutjubic.security.auth.RestAuthenticationEntryPoint;
 import isa.jutjubic.security.auth.TokenAuthenticationFilter;
-import isa.jutjubic.service.impl.CustomUserDetailsService;
+import isa.jutjubic.service.impl.CustomUserDetailsServiceImpl;
 import isa.jutjubic.util.TokenUtils;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 // Injektovanje bean-a za bezbednost
@@ -33,12 +31,12 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebSecurityConfig {
 
 	@Autowired
-	private MonitoringService monitoringService;
+	private MonitoringServiceImpl monitoringService;
 
 	// Servis koji se koristi za citanje podataka o korisnicima aplikacije
 	@Bean
     public UserDetailsService userDetailsService() {
-        return new CustomUserDetailsService();
+        return new CustomUserDetailsServiceImpl();
     }
 
 	// Implementacija PasswordEncoder-a koriscenjem BCrypt hashing funkcije.

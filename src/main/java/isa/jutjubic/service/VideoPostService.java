@@ -4,13 +4,11 @@ import isa.jutjubic.crdt.GCounter;
 import isa.jutjubic.dto.VideoPostCreateRequest;
 import isa.jutjubic.model.User;
 import isa.jutjubic.model.VideoPost;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public interface VideoPostService {
 

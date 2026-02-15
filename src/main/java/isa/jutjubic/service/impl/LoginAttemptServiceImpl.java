@@ -1,5 +1,6 @@
 package isa.jutjubic.service.impl;
 
+import isa.jutjubic.service.LoginAttemptService;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayDeque;
@@ -8,7 +9,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
-public class LoginAttemptService {
+public class LoginAttemptServiceImpl implements LoginAttemptService {
 
     private static final int MAX_ATTEMPTS = 5;
     private static final long WINDOW_MS = 60_000;

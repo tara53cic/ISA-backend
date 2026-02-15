@@ -1,10 +1,9 @@
 package isa.jutjubic.controller;
 
-import isa.jutjubic.exception.ResourceConflictException;
 import isa.jutjubic.model.VerificationToken;
-import isa.jutjubic.service.impl.EmailService;
-import isa.jutjubic.service.impl.LoginAttemptService;
-import isa.jutjubic.service.impl.VerificationTokenService;
+import isa.jutjubic.service.EmailService;
+import isa.jutjubic.service.LoginAttemptService;
+import isa.jutjubic.service.VerificationTokenService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +16,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import isa.jutjubic.dto.JwtAuthenticationRequest;
 import isa.jutjubic.dto.UserRequest;

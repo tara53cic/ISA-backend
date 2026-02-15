@@ -2,14 +2,13 @@ package isa.jutjubic.security.auth;
 
 import java.io.IOException;
 
-import isa.jutjubic.service.impl.MonitoringService;
+import isa.jutjubic.service.impl.MonitoringServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -29,11 +28,11 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
 	private UserDetailsService userDetailsService;
 
-	private final MonitoringService monitoringService;
+	private final MonitoringServiceImpl monitoringService;
 	
 	protected final Log LOGGER = LogFactory.getLog(getClass());
 
-	public TokenAuthenticationFilter(MonitoringService monitoringService,TokenUtils tokenHelper, UserDetailsService userDetailsService) {
+	public TokenAuthenticationFilter(MonitoringServiceImpl monitoringService, TokenUtils tokenHelper, UserDetailsService userDetailsService) {
 		this.tokenUtils = tokenHelper;
 		this.userDetailsService = userDetailsService;
 		this.monitoringService = monitoringService;

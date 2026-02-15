@@ -7,6 +7,7 @@ import isa.jutjubic.model.View;
 import isa.jutjubic.repository.PopularVideoReportRepository;
 import isa.jutjubic.repository.VideoPostRepository;
 import isa.jutjubic.repository.ViewRepository;
+import isa.jutjubic.service.EtlPipelineService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,12 +25,12 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class EtlPipelineService {
+public class EtlPipelineServiceImpl implements EtlPipelineService {
 
     private final ViewRepository viewRepository;
     private final PopularVideoReportRepository reportRepository;
     private final VideoPostRepository videoRepository;
-    private static final Logger log = LoggerFactory.getLogger(EtlPipelineService.class);
+    private static final Logger log = LoggerFactory.getLogger(EtlPipelineServiceImpl.class);
 
 
     @Scheduled(cron = "0 0 2 * * *") //  2:00 svaki dan
