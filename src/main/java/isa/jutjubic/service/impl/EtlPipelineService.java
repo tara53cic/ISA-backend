@@ -32,8 +32,8 @@ public class EtlPipelineService {
     private static final Logger log = LoggerFactory.getLogger(EtlPipelineService.class);
 
 
-    //@Scheduled(cron = "0 0 2 * * *") //  2:00 svaki dan
-    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(cron = "0 0 2 * * *") //  2:00 svaki dan
+    //@Scheduled(cron = "0 * * * * *")
     public void runPopularityPipeline() {
 
         LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7).with(LocalTime.MIN);
